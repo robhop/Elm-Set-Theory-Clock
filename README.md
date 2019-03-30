@@ -1,1 +1,1 @@
-# Set Theory Clock implementatio in Elm
+# Set Theory Clock in Elm
