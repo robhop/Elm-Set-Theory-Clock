@@ -1,6 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
 
 import Browser
+import DateFormat
 import Element exposing (Element, alignRight, centerY, column, el, fill, height, maximum, padding, rgb255, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
@@ -92,89 +93,137 @@ view ( time, zone ) =
 
         fiveMinute =
             SetTheoryClock.fiveMinute ( time, zone )
-
-        startBorder =
-            Border.roundEach { topLeft = 15, bottomLeft = 15, topRight = 0, bottomRight = 0 }
     in
-    Element.layout [ Background.color (rgb255 0 0 0) ]
-        (column [ Element.centerX, height (fill |> Element.minimum 1000), spacing 4 ]
-            [ row [ padding 10, Element.centerX ]
-                [ el [ yelloWhenSet blink, Border.rounded 32, Element.padding 30, borderWidht, borderColor ] Element.none
+    Element.layout [ Background.color (rgb255 0 0 0), Element.padding 50 ]
+        (column [ Element.centerX, spacing 14 ]
+            [ row [ Element.centerX ]
+                [ el (yellow blink |> roundPadding |> addBorder Singel) Element.none
                 ]
             , row []
-                [ el [ redWhenSet (fiveHour 0), standardPadding, borderWidht, borderColor, startBorder ] Element.none
-                , el [ redWhenSet (fiveHour 1), standardPadding, borderWidht, borderColor ] Element.none
-                , el [ redWhenSet (fiveHour 2), standardPadding, borderWidht, borderColor ] Element.none
-                , el [ redWhenSet (fiveHour 3), standardPadding, borderWidht, borderColor, endBorder ] Element.none
+                [ el (red (fiveHour 0) |> normalPadding |> addBorder Start) Element.none
+                , el (red (fiveHour 1) |> normalPadding |> addBorder Middle) Element.none
+                , el (red (fiveHour 2) |> normalPadding |> addBorder Middle) Element.none
+                , el (red (fiveHour 3) |> normalPadding |> addBorder End) Element.none
                 ]
             , row []
-                [ el [ redWhenSet (oneHour 0), standardPadding, borderWidht, borderColor, startBorder ] Element.none
-                , el [ redWhenSet (oneHour 1), standardPadding, borderWidht, borderColor ] Element.none
-                , el [ redWhenSet (oneHour 2), standardPadding, borderWidht, borderColor ] Element.none
-                , el [ redWhenSet (oneHour 3), standardPadding, borderWidht, borderColor, endBorder ] Element.none
+                [ el (red (oneHour 0) |> normalPadding |> addBorder Start) Element.none
+                , el (red (oneHour 1) |> normalPadding |> addBorder Middle) Element.none
+                , el (red (oneHour 2) |> normalPadding |> addBorder Middle) Element.none
+                , el (red (oneHour 3) |> normalPadding |> addBorder End) Element.none
                 ]
             , row []
-                [ el [ yelloWhenSet (fiveMinute 0), smallPadding, borderWidht, borderColor, startBorder ] Element.none
-                , el [ yelloWhenSet (fiveMinute 1), smallPadding, borderWidht, borderColor ] Element.none
-                , el [ redWhenSet (fiveMinute 2), smallPadding, borderWidht, borderColor ] Element.none
-                , el [ yelloWhenSet (fiveMinute 3), smallPadding, borderWidht, borderColor ] Element.none
-                , el [ yelloWhenSet (fiveMinute 4), smallPadding, borderWidht, borderColor ] Element.none
-                , el [ redWhenSet (fiveMinute 5), smallPadding, borderWidht, borderColor ] Element.none
-                , el [ yelloWhenSet (fiveMinute 6), smallPadding, borderWidht, borderColor ] Element.none
-                , el [ yelloWhenSet (fiveMinute 7), smallPadding, borderWidht, borderColor ] Element.none
-                , el [ redWhenSet (fiveMinute 8), smallPadding, borderWidht, borderColor ] Element.none
-                , el [ yelloWhenSet (fiveMinute 9), smallPadding, borderWidht, borderColor ] Element.none
-                , el [ yelloWhenSet (fiveMinute 10), smallPadding, borderWidht, borderColor, endBorder ] Element.none
+                [ el (yellow (fiveMinute 0) |> smallPadding |> addBorder Start) Element.none
+                , el (yellow (fiveMinute 1) |> smallPadding |> addBorder Middle) Element.none
+                , el (red (fiveMinute 2) |> smallPadding |> addBorder Middle) Element.none
+                , el (yellow (fiveMinute 3) |> smallPadding |> addBorder Middle) Element.none
+                , el (yellow (fiveMinute 4) |> smallPadding |> addBorder Middle) Element.none
+                , el (red (fiveMinute 5) |> smallPadding |> addBorder Middle) Element.none
+                , el (yellow (fiveMinute 6) |> smallPadding |> addBorder Middle) Element.none
+                , el (yellow (fiveMinute 7) |> smallPadding |> addBorder Middle) Element.none
+                , el (red (fiveMinute 8) |> smallPadding |> addBorder Middle) Element.none
+                , el (yellow (fiveMinute 9) |> smallPadding |> addBorder Middle) Element.none
+                , el (yellow (fiveMinute 10) |> smallPadding |> addBorder Middle) Element.none
+                , el (red (fiveMinute 11) |> smallPadding |> addBorder End) Element.none
                 ]
             , row []
-                [ el [ yelloWhenSet (oneMinute 0), standardPadding, borderWidht, borderColor, startBorder ] Element.none
-                , el [ yelloWhenSet (oneMinute 1), standardPadding, borderWidht, borderColor ] Element.none
-                , el [ yelloWhenSet (oneMinute 2), standardPadding, borderWidht, borderColor ] Element.none
-                , el [ yelloWhenSet (oneMinute 3), standardPadding, borderWidht, borderColor, endBorder ] Element.none
+                [ el (yellow (oneMinute 0) |> normalPadding |> addBorder Start) Element.none
+                , el (yellow (oneMinute 1) |> normalPadding |> addBorder Middle) Element.none
+                , el (yellow (oneMinute 2) |> normalPadding |> addBorder Middle) Element.none
+                , el (yellow (oneMinute 3) |> normalPadding |> addBorder End) Element.none
+                ]
+            , row [ Element.centerX ]
+                [ el [ Font.color (rgb255 200 200 200), Element.padding 20 ]
+                    (Element.text (formatter zone time))
                 ]
             ]
         )
 
 
-endBorder =
-    Border.roundEach { topLeft = 0, bottomLeft = 0, topRight = 15, bottomRight = 15 }
+normalPadding list =
+    Element.paddingXY 34 22 :: list
 
 
-standardPadding =
-    Element.paddingXY 30 20
+roundPadding list =
+    Border.rounded 40 :: (Element.padding 34 :: list)
 
 
-smallPadding =
-    Element.paddingXY 9 20
+smallPadding list =
+    Element.paddingXY 10 22 :: list
 
 
-borderColor =
-    Border.color (rgb255 200 200 200)
+type StcBorder
+    = Start
+    | Middle
+    | End
+    | Singel
 
 
-borderWidht =
-    Border.width 3
+addBorder borderType list =
+    let
+        b =
+            Border.color (rgb255 200 200 200) :: list
+    in
+    case borderType of
+        Start ->
+            Border.roundEach
+                { topLeft = 15
+                , bottomLeft = 15
+                , topRight = 0
+                , bottomRight = 0
+                }
+                :: (Border.widthEach { bottom = 4, top = 4, left = 4, right = 2 } :: b)
+
+        Middle ->
+            Border.widthEach
+                { bottom = 4
+                , top = 4
+                , left = 2
+                , right = 2
+                }
+                :: b
+
+        End ->
+            Border.roundEach
+                { topLeft = 0
+                , bottomLeft = 0
+                , topRight = 15
+                , bottomRight = 15
+                }
+                :: (Border.widthEach { bottom = 4, top = 4, left = 2, right = 4 } :: b)
+
+        Singel ->
+            Border.widthEach
+                { bottom = 4
+                , top = 4
+                , left = 4
+                , right = 4
+                }
+                :: b
 
 
-yelloWhenSet : Bool -> Element.Attribute msg
-yelloWhenSet b =
-    case b of
+yellow bool =
+    case bool of
         True ->
-            Background.color (rgb255 230 230 50)
+            [ Background.color (rgb255 230 230 50) ]
 
         False ->
-            Background.color (rgb255 90 90 10)
+            [ Background.color (rgb255 90 90 10) ]
 
 
-redWhenSet : Bool -> Element.Attribute msg
-redWhenSet b =
+red b =
     case b of
         True ->
-            Background.color (rgb255 255 50 50)
+            [ Background.color (rgb255 255 50 50) ]
 
         False ->
-            Background.color (rgb255 50 30 30)
+            [ Background.color (rgb255 50 30 30) ]
 
 
-
--- h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second ++ "  " ++ blink ++ "  " ++ fiveMinutes1) ]
+formatter =
+    DateFormat.format
+        [ DateFormat.hourMilitaryFixed
+        , DateFormat.text ":"
+        , DateFormat.minuteFixed
+        , DateFormat.text ":"
+        , DateFormat.secondFixed
+        ]
