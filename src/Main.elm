@@ -122,8 +122,7 @@ view ( time, zone ) =
                 , el (yellow (fiveMinute 7) |> smallPadding |> addBorder Middle) Element.none
                 , el (red (fiveMinute 8) |> smallPadding |> addBorder Middle) Element.none
                 , el (yellow (fiveMinute 9) |> smallPadding |> addBorder Middle) Element.none
-                , el (yellow (fiveMinute 10) |> smallPadding |> addBorder Middle) Element.none
-                , el (red (fiveMinute 11) |> smallPadding |> addBorder End) Element.none
+                , el (yellow (fiveMinute 10) |> smallPadding |> addBorder End) Element.none
                 ]
             , row []
                 [ el (yellow (oneMinute 0) |> normalPadding |> addBorder Start) Element.none
@@ -148,7 +147,7 @@ roundPadding list =
 
 
 smallPadding list =
-    Element.paddingXY 10 22 :: list
+    Element.paddingXY 11 22 :: list
 
 
 type StcBorder
