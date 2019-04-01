@@ -1,13 +1,15 @@
 module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
 
+-- exposing (Element, alignRight, centerY, column, el, fill, height, maximum, padding, rgb255, row, spacing, text, width)
+
 import Browser
 import DateFormat
-import Element exposing (Element, alignRight, centerY, column, el, fill, height, maximum, padding, rgb255, row, spacing, text, width)
+import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html exposing (..)
-import SetTheoryClock
+import SetTheoryClock as STC exposing (Color(..), LightType(..))
 import Task
 import Time
 
@@ -79,24 +81,80 @@ subscriptions model =
 view : Model -> Html Msg
 view ( time, zone ) =
     let
+        isOn =
+            STC.isOn ( time, zone )
+
         blink =
-            SetTheoryClock.oddSecond ( time, zone )
+            STC.oddSecond ( time, zone )
 
         fiveHour =
-            SetTheoryClock.fiveHour ( time, zone )
+            STC.fiveHour ( time, zone )
 
         oneHour =
-            SetTheoryClock.oneHour ( time, zone )
+            STC.oneHour ( time, zone )
 
         oneMinute =
-            SetTheoryClock.oneMinute ( time, zone )
+            STC.oneMinute ( time, zone )
 
         fiveMinute =
-            SetTheoryClock.fiveMinute ( time, zone )
+            STC.fiveMinute ( time, zone )
     in
-    Element.layout [ Background.color (rgb255 0 0 0), Element.padding 50 ]
-        (column [ Element.centerX, spacing 14 ]
-            [ row [ Element.centerX ]
+    Element.layout [ Background.color (Element.rgb255 0 0 0), Element.padding 50 ]
+        (Element.column
+            [ Element.centerX, Element.spacing 14 ]
+            (List.map (\row -> displayRow row (isOn row)) STC.rows)
+        )
+
+
+displayRow : STC.RowType -> (Int -> Bool) -> Element msg
+displayRow rowType isOn =
+    let
+        lights =
+            STC.lights rowType
+    in
+    Element.row [ Element.centerX ]
+        (List.indexedMap
+            (\index lightType -> displayLight lightType (isOn index))
+            lights
+        )
+
+
+displayLight : STC.LightType -> Bool -> Element msg
+displayLight lightType isOn =
+    case lightType of
+        STC.Round c ->
+            Element.el [ color c isOn ] (Element.text "x")
+
+        STC.Start c ->
+            Element.el [ color c isOn ] (Element.text "<")
+
+        STC.End c ->
+            Element.el [ color c isOn ] (Element.text ">")
+
+        STC.Middle c ->
+            Element.el [ color c isOn ] (Element.text "x")
+
+
+color : STC.Color -> Bool -> Element.Attribute msg
+color c on =
+    let
+        x =
+            if on then
+                100
+
+            else
+                50
+    in
+    case c of
+        STC.Yellow ->
+            Background.color (Element.rgb255 (2 * x) (2 * x) 0)
+
+        STC.Red ->
+            Background.color (Element.rgb255 (2 * x) 0 0)
+
+
+
+{--[ row [ Element.centerX ]
                 [ el (yellow blink |> roundPadding |> addBorder Singel) Element.none
                 ]
             , row []
@@ -136,6 +194,7 @@ view ( time, zone ) =
                 ]
             ]
         )
+--}
 
 
 normalPadding list =
@@ -160,7 +219,7 @@ type StcBorder
 addBorder borderType list =
     let
         b =
-            Border.color (rgb255 200 200 200) :: list
+            Border.color (Element.rgb255 200 200 200) :: list
     in
     case borderType of
         Start ->
@@ -203,19 +262,19 @@ addBorder borderType list =
 yellow bool =
     case bool of
         True ->
-            [ Background.color (rgb255 230 230 50) ]
+            [ Background.color (Element.rgb255 230 230 50) ]
 
         False ->
-            [ Background.color (rgb255 90 90 10) ]
+            [ Background.color (Element.rgb255 90 90 10) ]
 
 
 red b =
     case b of
         True ->
-            [ Background.color (rgb255 255 50 50) ]
+            [ Background.color (Element.rgb255 255 50 50) ]
 
         False ->
-            [ Background.color (rgb255 50 30 30) ]
+            [ Background.color (Element.rgb255 50 30 30) ]
 
 
 formatter =
