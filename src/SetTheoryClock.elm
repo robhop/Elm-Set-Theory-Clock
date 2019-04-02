@@ -1,14 +1,9 @@
 module SetTheoryClock exposing
     ( Color(..)
     , LightType(..)
-    , RowType
-    , fiveHour
-    , fiveMinute
+    , RowType(..)
     , isOn
     , lights
-    , oddSecond
-    , oneHour
-    , oneMinute
     , rows
     )
 
@@ -71,49 +66,24 @@ rows =
 
 
 isOn : ( Time.Posix, Time.Zone ) -> RowType -> Int -> Bool
-isOn tz rowType index =
+isOn ( time, zone ) rowType index =
     case rowType of
         Second ->
-            oddSecond tz
+            case modBy 2 (Time.toSecond zone time) of
+                0 ->
+                    False
+
+                _ ->
+                    True
 
         FiveHour ->
-            fiveHour tz index
+            index < Time.toHour zone time // 5
 
         OneHour ->
-            oneHour tz index
+            index < modBy 5 (Time.toHour zone time)
 
         FiveMinute ->
-            fiveMinute tz index
+            index < Time.toMinute zone time // 5
 
         OneMinute ->
-            oneMinute tz index
-
-
-fiveHour : ( Time.Posix, Time.Zone ) -> Int -> Bool
-fiveHour ( time, zone ) index =
-    index < Time.toHour zone time // 5
-
-
-oneHour : ( Time.Posix, Time.Zone ) -> Int -> Bool
-oneHour ( time, zone ) index =
-    index < modBy 5 (Time.toHour zone time)
-
-
-oneMinute : ( Time.Posix, Time.Zone ) -> Int -> Bool
-oneMinute ( time, zone ) index =
-    index < modBy 5 (Time.toMinute zone time)
-
-
-fiveMinute : ( Time.Posix, Time.Zone ) -> Int -> Bool
-fiveMinute ( time, zone ) index =
-    index < Time.toMinute zone time // 5
-
-
-oddSecond : ( Time.Posix, Time.Zone ) -> Bool
-oddSecond ( time, zone ) =
-    case modBy 2 (Time.toSecond zone time) of
-        0 ->
-            False
-
-        _ ->
-            True
+            index < modBy 5 (Time.toMinute zone time)

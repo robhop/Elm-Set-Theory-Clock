@@ -1,15 +1,12 @@
 module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
 
--- exposing (Element, alignRight, centerY, column, el, fill, height, maximum, padding, rgb255, row, spacing, text, width)
-
 import Browser
-import DateFormat
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html exposing (..)
-import SetTheoryClock as STC exposing (Color(..), LightType(..))
+import SetTheoryClock as STC exposing (Color(..), LightType(..), RowType(..))
 import Task
 import Time
 
@@ -79,209 +76,107 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view ( time, zone ) =
-    let
-        isOn =
-            STC.isOn ( time, zone )
-
-        blink =
-            STC.oddSecond ( time, zone )
-
-        fiveHour =
-            STC.fiveHour ( time, zone )
-
-        oneHour =
-            STC.oneHour ( time, zone )
-
-        oneMinute =
-            STC.oneMinute ( time, zone )
-
-        fiveMinute =
-            STC.fiveMinute ( time, zone )
-    in
+view tz =
     Element.layout [ Background.color (Element.rgb255 0 0 0), Element.padding 50 ]
         (Element.column
             [ Element.centerX, Element.spacing 14 ]
-            (List.map (\row -> displayRow row (isOn row)) STC.rows)
+            (List.map
+                (\row ->
+                    Element.row
+                        [ Element.centerX ]
+                        (List.indexedMap
+                            (\index lightType ->
+                                let
+                                    isOn =
+                                        STC.isOn tz row index
+
+                                    element c =
+                                        Element.el (padding row [] |> border lightType |> color c isOn) Element.none
+                                in
+                                case lightType of
+                                    STC.Round c ->
+                                        element c
+
+                                    STC.Start c ->
+                                        element c
+
+                                    STC.End c ->
+                                        element c
+
+                                    STC.Middle c ->
+                                        element c
+                            )
+                            (STC.lights row)
+                        )
+                )
+                STC.rows
+            )
         )
 
 
-displayRow : STC.RowType -> (Int -> Bool) -> Element msg
-displayRow rowType isOn =
+padding : STC.RowType -> List (Element.Attribute msg) -> List (Element.Attribute msg)
+padding row list =
+    case row of
+        STC.Second ->
+            Element.paddingXY 34 32 :: list
+
+        STC.FiveMinute ->
+            Element.paddingXY 11 20 :: list
+
+        _ ->
+            Element.paddingXY 34 20 :: list
+
+
+border : STC.LightType -> List (Element.Attribute msg) -> List (Element.Attribute msg)
+border light li =
     let
-        lights =
-            STC.lights rowType
+        list =
+            Border.color (Element.rgb255 200 200 200) :: li
     in
-    Element.row [ Element.centerX ]
-        (List.indexedMap
-            (\index lightType -> displayLight lightType (isOn index))
-            lights
-        )
-
-
-displayLight : STC.LightType -> Bool -> Element msg
-displayLight lightType isOn =
-    case lightType of
+    case light of
         STC.Round c ->
-            Element.el [ color c isOn ] (Element.text "x")
+            Border.rounded 40
+                :: Border.width 4
+                :: list
 
         STC.Start c ->
-            Element.el [ color c isOn ] (Element.text "<")
-
-        STC.End c ->
-            Element.el [ color c isOn ] (Element.text ">")
-
-        STC.Middle c ->
-            Element.el [ color c isOn ] (Element.text "x")
-
-
-color : STC.Color -> Bool -> Element.Attribute msg
-color c on =
-    let
-        x =
-            if on then
-                100
-
-            else
-                50
-    in
-    case c of
-        STC.Yellow ->
-            Background.color (Element.rgb255 (2 * x) (2 * x) 0)
-
-        STC.Red ->
-            Background.color (Element.rgb255 (2 * x) 0 0)
-
-
-
-{--[ row [ Element.centerX ]
-                [ el (yellow blink |> roundPadding |> addBorder Singel) Element.none
-                ]
-            , row []
-                [ el (red (fiveHour 0) |> normalPadding |> addBorder Start) Element.none
-                , el (red (fiveHour 1) |> normalPadding |> addBorder Middle) Element.none
-                , el (red (fiveHour 2) |> normalPadding |> addBorder Middle) Element.none
-                , el (red (fiveHour 3) |> normalPadding |> addBorder End) Element.none
-                ]
-            , row []
-                [ el (red (oneHour 0) |> normalPadding |> addBorder Start) Element.none
-                , el (red (oneHour 1) |> normalPadding |> addBorder Middle) Element.none
-                , el (red (oneHour 2) |> normalPadding |> addBorder Middle) Element.none
-                , el (red (oneHour 3) |> normalPadding |> addBorder End) Element.none
-                ]
-            , row []
-                [ el (yellow (fiveMinute 0) |> smallPadding |> addBorder Start) Element.none
-                , el (yellow (fiveMinute 1) |> smallPadding |> addBorder Middle) Element.none
-                , el (red (fiveMinute 2) |> smallPadding |> addBorder Middle) Element.none
-                , el (yellow (fiveMinute 3) |> smallPadding |> addBorder Middle) Element.none
-                , el (yellow (fiveMinute 4) |> smallPadding |> addBorder Middle) Element.none
-                , el (red (fiveMinute 5) |> smallPadding |> addBorder Middle) Element.none
-                , el (yellow (fiveMinute 6) |> smallPadding |> addBorder Middle) Element.none
-                , el (yellow (fiveMinute 7) |> smallPadding |> addBorder Middle) Element.none
-                , el (red (fiveMinute 8) |> smallPadding |> addBorder Middle) Element.none
-                , el (yellow (fiveMinute 9) |> smallPadding |> addBorder Middle) Element.none
-                , el (yellow (fiveMinute 10) |> smallPadding |> addBorder End) Element.none
-                ]
-            , row []
-                [ el (yellow (oneMinute 0) |> normalPadding |> addBorder Start) Element.none
-                , el (yellow (oneMinute 1) |> normalPadding |> addBorder Middle) Element.none
-                , el (yellow (oneMinute 2) |> normalPadding |> addBorder Middle) Element.none
-                , el (yellow (oneMinute 3) |> normalPadding |> addBorder End) Element.none
-                ]
-            , row [ Element.centerX ]
-                [ el [ Font.color (rgb255 200 200 200), Element.padding 20 ]
-                    (Element.text (formatter zone time))
-                ]
-            ]
-        )
---}
-
-
-normalPadding list =
-    Element.paddingXY 34 22 :: list
-
-
-roundPadding list =
-    Border.rounded 40 :: (Element.padding 34 :: list)
-
-
-smallPadding list =
-    Element.paddingXY 11 22 :: list
-
-
-type StcBorder
-    = Start
-    | Middle
-    | End
-    | Singel
-
-
-addBorder borderType list =
-    let
-        b =
-            Border.color (Element.rgb255 200 200 200) :: list
-    in
-    case borderType of
-        Start ->
             Border.roundEach
                 { topLeft = 15
                 , bottomLeft = 15
                 , topRight = 0
                 , bottomRight = 0
                 }
-                :: (Border.widthEach { bottom = 4, top = 4, left = 4, right = 2 } :: b)
+                :: Border.widthEach { bottom = 4, top = 4, left = 4, right = 2 }
+                :: list
 
-        Middle ->
-            Border.widthEach
-                { bottom = 4
-                , top = 4
-                , left = 2
-                , right = 2
-                }
-                :: b
-
-        End ->
+        STC.End c ->
             Border.roundEach
                 { topLeft = 0
                 , bottomLeft = 0
                 , topRight = 15
                 , bottomRight = 15
                 }
-                :: (Border.widthEach { bottom = 4, top = 4, left = 2, right = 4 } :: b)
+                :: Border.widthEach { bottom = 4, top = 4, left = 2, right = 4 }
+                :: list
 
-        Singel ->
-            Border.widthEach
-                { bottom = 4
-                , top = 4
-                , left = 4
-                , right = 4
-                }
-                :: b
+        STC.Middle c ->
+            Border.widthEach { bottom = 4, top = 4, left = 2, right = 2 }
+                :: list
 
 
-yellow bool =
-    case bool of
-        True ->
-            [ Background.color (Element.rgb255 230 230 50) ]
+color : STC.Color -> Bool -> List (Element.Attribute msg) -> List (Element.Attribute msg)
+color c on list =
+    let
+        x =
+            if on then
+                150
 
-        False ->
-            [ Background.color (Element.rgb255 90 90 10) ]
+            else
+                50
+    in
+    case c of
+        STC.Yellow ->
+            Background.color (Element.rgb255 x x 0) :: list
 
-
-red b =
-    case b of
-        True ->
-            [ Background.color (Element.rgb255 255 50 50) ]
-
-        False ->
-            [ Background.color (Element.rgb255 50 30 30) ]
-
-
-formatter =
-    DateFormat.format
-        [ DateFormat.hourMilitaryFixed
-        , DateFormat.text ":"
-        , DateFormat.minuteFixed
-        , DateFormat.text ":"
-        , DateFormat.secondFixed
-        ]
+        STC.Red ->
+            Background.color (Element.rgb255 x 0 0) :: list
