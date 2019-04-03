@@ -1,12 +1,13 @@
 module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
 
 import Browser
+import DateFormat
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html exposing (..)
-import SetTheoryClock as STC exposing (Color(..), LightType(..), RowType(..))
+import SetTheoryClock as STC exposing (Color(..), Light, LightType(..), Row, RowType(..))
 import Task
 import Time
 
@@ -76,7 +77,7 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view tz =
+view model =
     Element.layout [ Background.color (Element.rgb255 0 0 0), Element.padding 50 ]
         (Element.column
             [ Element.centerX, Element.spacing 14 ]
@@ -85,38 +86,31 @@ view tz =
                     Element.row
                         [ Element.centerX ]
                         (List.indexedMap
-                            (\index lightType ->
+                            (\index light ->
                                 let
                                     isOn =
-                                        STC.isOn tz row index
-
-                                    element c =
-                                        Element.el (padding row [] |> border lightType |> color c isOn) Element.none
+                                        STC.isOn model row index
                                 in
-                                case lightType of
-                                    STC.Round c ->
-                                        element c
-
-                                    STC.Start c ->
-                                        element c
-
-                                    STC.End c ->
-                                        element c
-
-                                    STC.Middle c ->
-                                        element c
+                                Element.el
+                                    ([]
+                                        |> padding row.rowType
+                                        |> border light.lightType
+                                        |> color light.color isOn
+                                    )
+                                    Element.none
                             )
-                            (STC.lights row)
+                            row.lights
                         )
                 )
                 STC.rows
+                ++ [ textClock model ]
             )
         )
 
 
 padding : STC.RowType -> List (Element.Attribute msg) -> List (Element.Attribute msg)
-padding row list =
-    case row of
+padding rowType list =
+    case rowType of
         STC.Second ->
             Element.paddingXY 34 32 :: list
 
@@ -131,15 +125,15 @@ border : STC.LightType -> List (Element.Attribute msg) -> List (Element.Attribut
 border light li =
     let
         list =
-            Border.color (Element.rgb255 200 200 200) :: li
+            Border.color (Element.rgb255 160 160 160) :: li
     in
     case light of
-        STC.Round c ->
+        STC.Round ->
             Border.rounded 40
                 :: Border.width 4
                 :: list
 
-        STC.Start c ->
+        STC.Start ->
             Border.roundEach
                 { topLeft = 15
                 , bottomLeft = 15
@@ -149,7 +143,7 @@ border light li =
                 :: Border.widthEach { bottom = 4, top = 4, left = 4, right = 2 }
                 :: list
 
-        STC.End c ->
+        STC.End ->
             Border.roundEach
                 { topLeft = 0
                 , bottomLeft = 0
@@ -159,7 +153,7 @@ border light li =
                 :: Border.widthEach { bottom = 4, top = 4, left = 2, right = 4 }
                 :: list
 
-        STC.Middle c ->
+        STC.Middle ->
             Border.widthEach { bottom = 4, top = 4, left = 2, right = 2 }
                 :: list
 
@@ -169,7 +163,7 @@ color c on list =
     let
         x =
             if on then
-                150
+                230
 
             else
                 50
@@ -180,3 +174,23 @@ color c on list =
 
         STC.Red ->
             Background.color (Element.rgb255 x 0 0) :: list
+
+
+textClock : ( Time.Posix, Time.Zone ) -> Element msg
+textClock ( time, zone ) =
+    Element.row
+        [ Element.padding 10
+        , Element.centerX
+        , Font.color (Element.rgb255 150 150 150)
+        ]
+        [ Element.text (formatter zone time) ]
+
+
+formatter =
+    DateFormat.format
+        [ DateFormat.hourMilitaryFixed
+        , DateFormat.text ":"
+        , DateFormat.minuteFixed
+        , DateFormat.text ":"
+        , DateFormat.secondFixed
+        ]

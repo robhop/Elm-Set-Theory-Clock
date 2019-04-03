@@ -1,13 +1,22 @@
 module SetTheoryClock exposing
     ( Color(..)
+    , Light
     , LightType(..)
+    , Row
     , RowType(..)
     , isOn
-    , lights
     , rows
     )
 
 import Time
+
+
+type alias Row =
+    { rowType : RowType, lights : List Light }
+
+
+type alias Light =
+    { lightType : LightType, color : Color }
 
 
 type RowType
@@ -19,10 +28,10 @@ type RowType
 
 
 type LightType
-    = Round Color
-    | Start Color
-    | Middle Color
-    | End Color
+    = Round
+    | Start
+    | Middle
+    | End
 
 
 type Color
@@ -30,51 +39,50 @@ type Color
     | Red
 
 
-lights : RowType -> List LightType
-lights row =
-    case row of
-        Second ->
-            [ Round Yellow ]
-
-        FiveHour ->
-            [ Start Red, Middle Red, Middle Red, End Red ]
-
-        OneHour ->
-            [ Start Red, Middle Red, Middle Red, End Red ]
-
-        FiveMinute ->
-            [ Start Yellow
-            , Middle Yellow
-            , Middle Red
-            , Middle Yellow
-            , Middle Yellow
-            , Middle Red
-            , Middle Yellow
-            , Middle Yellow
-            , Middle Red
-            , Middle Yellow
-            , End Yellow
-            ]
-
-        OneMinute ->
-            [ Start Yellow, Middle Yellow, Middle Yellow, End Yellow ]
-
-
-rows : List RowType
+rows : List Row
 rows =
-    [ Second, FiveHour, OneHour, FiveMinute, OneMinute ]
+    [ Row Second
+        [ Light Round Yellow
+        ]
+    , Row FiveHour
+        [ Light Start Red
+        , Light Middle Red
+        , Light Middle Red
+        , Light End Red
+        ]
+    , Row OneHour
+        [ Light Start Red
+        , Light Middle Red
+        , Light Middle Red
+        , Light End Red
+        ]
+    , Row FiveMinute
+        [ Light Start Yellow
+        , Light Middle Yellow
+        , Light Middle Red
+        , Light Middle Yellow
+        , Light Middle Yellow
+        , Light Middle Red
+        , Light Middle Yellow
+        , Light Middle Yellow
+        , Light Middle Red
+        , Light Middle Yellow
+        , Light End Yellow
+        ]
+    , Row OneMinute
+        [ Light Start Yellow
+        , Light Middle Yellow
+        , Light Middle Yellow
+        , Light End Yellow
+        ]
+    ]
 
 
-isOn : ( Time.Posix, Time.Zone ) -> RowType -> Int -> Bool
-isOn ( time, zone ) rowType index =
-    case rowType of
+isOn : ( Time.Posix, Time.Zone ) -> Row -> Int -> Bool
+isOn ( time, zone ) row index =
+    case row.rowType of
         Second ->
-            case modBy 2 (Time.toSecond zone time) of
-                0 ->
-                    False
-
-                _ ->
-                    True
+            modBy 2 (Time.toSecond zone time) == 0
 
         FiveHour ->
             index < Time.toHour zone time // 5
