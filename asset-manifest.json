@@ -1,11 +1,15 @@
 {
-  "main.css": "/Elm-Set-Theory-Clock/static/css/main.c24ba0bb.chunk.css",
-  "main.js": "/Elm-Set-Theory-Clock/static/js/main.a10ee76b.chunk.js",
-  "main.css.map": "/Elm-Set-Theory-Clock/static/css/main.c24ba0bb.chunk.css.map",
-  "main.js.map": "/Elm-Set-Theory-Clock/static/js/main.a10ee76b.chunk.js.map",
+  "main.css": "/Elm-Set-Theory-Clock/static/css/main.242caae5.chunk.css",
+  "main.js": "/Elm-Set-Theory-Clock/static/js/main.80278fcc.chunk.js",
+  "main.js.map": "/Elm-Set-Theory-Clock/static/js/main.80278fcc.chunk.js.map",
   "runtime~main.js": "/Elm-Set-Theory-Clock/static/js/runtime~main.cd26e410.js",
   "runtime~main.js.map": "/Elm-Set-Theory-Clock/static/js/runtime~main.cd26e410.js.map",
   "vendors~main.js": "/Elm-Set-Theory-Clock/static/js/vendors~main.3ca81432.chunk.js",
   "vendors~main.js.map": "/Elm-Set-Theory-Clock/static/js/vendors~main.3ca81432.chunk.js.map",
-  "index.html": "/Elm-Set-Theory-Clock/index.html"
+  "./service-worker.js": "/Elm-Set-Theory-Clock/./service-worker.js",
+  "favicon.ico": "/Elm-Set-Theory-Clock/favicon.ico",
+  "index.html": "/Elm-Set-Theory-Clock/index.html",
+  "logo.svg": "/Elm-Set-Theory-Clock/logo.svg",
+  "manifest.json": "/Elm-Set-Theory-Clock/manifest.json",
+  "precache-manifest.867e0a290a42b947975cde16ca4fc819.js": "/Elm-Set-Theory-Clock/precache-manifest.867e0a290a42b947975cde16ca4fc819.js"
 }
