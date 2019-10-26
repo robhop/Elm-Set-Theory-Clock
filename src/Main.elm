@@ -69,7 +69,11 @@ update msg ( time, zone ) =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every 1000 Tick
+    if Tuple.first model == Time.millisToPosix 0 then
+        Time.every 0 Tick
+
+    else
+        Time.every 1000 Tick
 
 
 
